@@ -1,3 +1,5 @@
+![](./example.png)
+
 # llmsh
 
 `llmsh` is a CLI tool for users unsure how to do something on the terminal.

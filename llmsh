@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 
-import requests, json
+import requests, json, subprocess
 
 # Obtain OpenAI API key from `API_KEY`
 api_key_file = open("API_KEY", "rt")
 API_KEY = api_key_file.readline().strip()
 
+# Generate BASH command from user description
 def generate_command(description):
+    prompt = """Your task is to generate BASH commands for a user.
+    Your response should only include the appropriate command, in plaintext
+    with no backticks, for the given description:\n"""
+
     url = "https://api.openai.com/v1/chat/completions"
     headers = {
         "Content-Type": "application/json",
@@ -17,7 +22,7 @@ def generate_command(description):
         "messages": [
             {
                 "role": "user",
-                "content": f"Your task is to generate bash commands for a user. Your response should only include the appropriate command, in plaintext with no backticks, for the given description:\n {description}"
+                "content": f"{prompt} {description}"
             }
         ]
     }
@@ -32,13 +37,19 @@ def generate_command(description):
         print(f"Error: {response.status_code} - {response.text}")
         return None
 
-def main():
-    description = input("llmsh>$: ")
+# Main
+if __name__ == "__main__":
+    description = input("\033[1mWhat would you like to do?\n\033[0m")
     command = generate_command(description)
 
     if command:
-        print(f"{command}")
+        print(f"\033[1mCommand generated:\n\033[0m`{command}`")
+        run = input("\033[1mWould you like to run the generated command? (Y/n)\033[0m ")
+        if run == "Y" or run == "y":
+            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            if result.returncode == 0:
+                print(f"\033[32m{result.stdout}\033[0m")
+            else:
+                print(f"\033[31m{result.stderr}\033[0m")
 
-if __name__ == "__main__":
-    main()
 
